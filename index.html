@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1A2332">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="퀀트 모바일">
+<title>퀀트 모바일</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- 잠금 화면 -->
+<div id="auth" class="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">🚀</div>
+    <h1>퀀트 모바일</h1>
+    <p class="auth-sub">초고성장 종목 스크리너</p>
+    <input type="password" id="pw-input" inputmode="numeric"
+           pattern="[0-9]*" maxlength="6" autocomplete="off"
+           placeholder="비밀번호">
+    <button id="pw-btn" class="auth-btn">접속</button>
+    <div id="pw-err" class="auth-err" hidden>비밀번호가 일치하지 않습니다</div>
+  </div>
+</div>
+
+<!-- 메인 앱 -->
+<div id="app" hidden>
+
+  <header class="top-bar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">QUANT</span>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="search-toggle" aria-label="검색">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+      <button class="icon-btn" id="filter-btn" aria-label="필터">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+          <line x1="4" y1="6" x2="20" y2="6"></line>
+          <line x1="6" y1="12" x2="18" y2="12"></line>
+          <line x1="9" y1="18" x2="15" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="search-bar" id="search-bar" hidden>
+    <input type="search" id="search-input" placeholder="종목명 또는 코드 검색"
+           autocomplete="off" autocorrect="off" autocapitalize="off">
+  </div>
+
+  <div class="meta-bar" id="meta-bar"></div>
+
+  <main id="card-list" class="card-list"></main>
+
+  <div id="pager" class="pager"></div>
+
+  <!-- 필터 드로어 -->
+  <div id="drawer-bg" class="drawer-bg" hidden></div>
+  <aside id="drawer" class="drawer" hidden>
+    <div class="drawer-grip"></div>
+    <div class="drawer-head">
+      <h2>필터 / 정렬</h2>
+      <button id="drawer-close" class="icon-btn" aria-label="닫기">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+
+      <section class="ds">
+        <label>시장</label>
+        <div class="chip-group" data-group="market">
+          <button class="chip active" data-val="KOSPI">KOSPI</button>
+          <button class="chip active" data-val="KOSDAQ">KOSDAQ</button>
+        </div>
+      </section>
+
+      <section class="ds">
+        <label>매출 성장률
+          <span class="ds-val"><span id="rev-val">100</span>% 이상</span>
+        </label>
+        <input type="range" id="rev-thresh" min="0" max="500" step="10" value="100">
+      </section>
+
+      <section class="ds">
+        <label>영업이익 성장률
+          <span class="ds-val"><span id="op-val">100</span>% 이상</span>
+        </label>
+        <input type="range" id="op-thresh" min="0" max="500" step="10" value="100">
+      </section>
+
+      <section class="ds">
+        <label>영업이익 규모 (2026 이후)</label>
+        <div class="chip-group" data-group="opsize">
+          <button class="chip" data-val="300이하">300억 이하</button>
+          <button class="chip" data-val="500-1000">500~1,000억</button>
+          <button class="chip active" data-val="1000+">1,000억 이상</button>
+        </div>
+      </section>
+
+      <section class="ds">
+        <label>최소 거래량</label>
+        <select id="min-vol">
+          <option value="0">제한 없음</option>
+          <option value="10000">1만 이상</option>
+          <option value="50000">5만 이상</option>
+          <option value="100000">10만 이상</option>
+          <option value="500000" selected>50만 이상</option>
+          <option value="1000000">100만 이상</option>
+        </select>
+      </section>
+
+      <section class="ds">
+        <label>정렬 기준</label>
+        <select id="sort-key">
+          <option value="visibility">미래 가시성 핵심성장</option>
+          <option value="op26">영업이익 규모 (26+)</option>
+          <option value="score">매출+영업이익 점수</option>
+          <option value="rev_max">매출 1년 최대성장률</option>
+          <option value="op_max">영업이익 1년 최대성장률</option>
+          <option value="vol_ratio">거래량 배수</option>
+          <option value="fwd_per">Forward PER (낮은순)</option>
+          <option value="peg">PEG (낮은순)</option>
+          <option value="mcap">시가총액</option>
+        </select>
+      </section>
+
+      <button id="apply-btn" class="apply-btn">적용</button>
+    </div>
+  </aside>
+
+</div>
+
+<script src="app.js" defer></script>
+</body>
+</html>
