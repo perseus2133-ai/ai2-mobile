@@ -18,11 +18,14 @@
     <div class="auth-logo">🚀</div>
     <h1>퀀트 모바일</h1>
     <p class="auth-sub">초고성장 종목 스크리너</p>
-    <input type="password" id="pw-input" inputmode="numeric"
-           pattern="[0-9]*" maxlength="6" autocomplete="off"
-           placeholder="비밀번호">
-    <button id="pw-btn" class="auth-btn">접속</button>
+    <form id="pw-form" autocomplete="off" novalidate>
+      <input type="password" id="pw-input" inputmode="numeric"
+             pattern="[0-9]*" maxlength="6" autocomplete="off"
+             placeholder="비밀번호">
+      <button type="submit" id="pw-btn" class="auth-btn">접속</button>
+    </form>
     <div id="pw-err" class="auth-err" hidden>비밀번호가 일치하지 않습니다</div>
+    <div id="pw-build" class="auth-build">v2</div>
   </div>
 </div>
 

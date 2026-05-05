@@ -109,10 +109,17 @@ input[type="search"]::-webkit-search-cancel-button { display: none; }
   transition: transform .15s;
 }
 .auth-btn:active { transform: scale(0.98); }
+#pw-form { display: contents; }
 .auth-err {
   margin-top: 12px;
   color: var(--red);
   font-size: 13px;
+}
+.auth-build {
+  margin-top: 8px;
+  color: var(--dim-2);
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 /* === 상단 바 ============================================== */

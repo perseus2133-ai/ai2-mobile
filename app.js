@@ -1,8 +1,9 @@
 /* ============================================================
-   퀀트 모바일 - app.js
+   퀀트 모바일 - app.js (v2: robust auth)
    - CSV는 ai2 레포의 raw URL에서 직접 fetch
    - LocalStorage에 30분 캐시 (모바일 데이터 절약)
    ============================================================ */
+console.log('[qm] app.js loaded, build v2');
 
 const CSV_URL = 'https://raw.githubusercontent.com/perseus2133-ai/ai2/main/data/consensus_data.csv';
 const PASSWORD = '9084';
@@ -25,37 +26,70 @@ const filters = {
 };
 
 /* ============================================================
-   인증
+   인증 (form submit 기반 + sessionStorage 폴백)
    ============================================================ */
+function safeGet(k) {
+  try { return sessionStorage.getItem(k); } catch (e) { return null; }
+}
+function safeSet(k, v) {
+  try { sessionStorage.setItem(k, v); return true; }
+  catch (e) { console.warn('[qm] sessionStorage blocked:', e); return false; }
+}
 function checkAuth() {
-  if (sessionStorage.getItem('qm_auth') === '1') {
+  if (safeGet('qm_auth') === '1') {
     showApp();
   } else {
-    document.getElementById('auth').hidden = false;
-    document.getElementById('app').hidden = true;
-    setTimeout(() => document.getElementById('pw-input').focus(), 100);
+    const auth = document.getElementById('auth');
+    const app  = document.getElementById('app');
+    if (auth) auth.hidden = false;
+    if (app)  app.hidden  = true;
+    setTimeout(() => {
+      const inp = document.getElementById('pw-input');
+      if (inp) inp.focus();
+    }, 100);
   }
 }
 function showApp() {
-  document.getElementById('auth').hidden = true;
-  document.getElementById('app').hidden = false;
+  const auth = document.getElementById('auth');
+  const app  = document.getElementById('app');
+  if (auth) auth.hidden = true;
+  if (app)  app.hidden  = false;
   loadData();
 }
-document.getElementById('pw-btn').addEventListener('click', tryAuth);
-document.getElementById('pw-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') tryAuth();
-});
-function tryAuth() {
-  const v = document.getElementById('pw-input').value;
+function tryAuth(ev) {
+  if (ev && ev.preventDefault) ev.preventDefault();
+  const inp = document.getElementById('pw-input');
+  const err = document.getElementById('pw-err');
+  if (!inp) { console.error('[qm] pw-input missing'); return false; }
+  const v = String(inp.value || '').trim();
+  console.log('[qm] tryAuth, len=', v.length);
   if (v === PASSWORD) {
-    sessionStorage.setItem('qm_auth', '1');
+    safeSet('qm_auth', '1');
+    if (err) err.hidden = true;
     showApp();
   } else {
-    document.getElementById('pw-err').hidden = false;
-    document.getElementById('pw-input').value = '';
-    document.getElementById('pw-input').focus();
+    if (err) {
+      err.textContent = v ? '비밀번호가 일치하지 않습니다' : '비밀번호를 입력하세요';
+      err.hidden = false;
+    }
+    inp.value = '';
+    inp.focus();
   }
+  return false;
 }
+
+// 폼 + 버튼 + 엔터키 모두 묶기 (모바일/데스크톱 모두 안정적)
+(function bindAuth() {
+  const form = document.getElementById('pw-form');
+  const btn  = document.getElementById('pw-btn');
+  const inp  = document.getElementById('pw-input');
+  if (form) form.addEventListener('submit', tryAuth);
+  if (btn)  btn.addEventListener('click', tryAuth);
+  if (inp)  inp.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') tryAuth(e);
+  });
+  console.log('[qm] auth bound: form=', !!form, 'btn=', !!btn, 'inp=', !!inp);
+})();
 
 /* ============================================================
    CSV parser (BOM/quoted-comma 처리)
