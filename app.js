@@ -3,7 +3,7 @@
    - CSV는 ai2 레포의 raw URL에서 직접 fetch
    - LocalStorage에 30분 캐시 (모바일 데이터 절약)
    ============================================================ */
-console.log('[qm] app.js loaded, build v2');
+console.log('[qm] app.js loaded, build v3');
 
 const CSV_URL = 'https://raw.githubusercontent.com/perseus2133-ai/ai2/main/data/consensus_data.csv';
 const PASSWORD = '9084';

@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="퀀트 모바일">
 <title>퀀트 모바일</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 
@@ -18,14 +18,14 @@
     <div class="auth-logo">🚀</div>
     <h1>퀀트 모바일</h1>
     <p class="auth-sub">초고성장 종목 스크리너</p>
-    <form id="pw-form" autocomplete="off" novalidate>
+    <form id="pw-form" autocomplete="off" novalidate onsubmit="return false;">
       <input type="password" id="pw-input" inputmode="numeric"
              pattern="[0-9]*" maxlength="6" autocomplete="off"
              placeholder="비밀번호">
-      <button type="submit" id="pw-btn" class="auth-btn">접속</button>
+      <button type="button" id="pw-btn" class="auth-btn">접속</button>
     </form>
     <div id="pw-err" class="auth-err" hidden>비밀번호가 일치하지 않습니다</div>
-    <div id="pw-build" class="auth-build">v2</div>
+    <div id="pw-build" class="auth-build">v3</div>
   </div>
 </div>
 
@@ -151,6 +151,6 @@
 
 </div>
 
-<script src="app.js" defer></script>
+<script src="app.js?v=3" defer></script>
 </body>
 </html>
