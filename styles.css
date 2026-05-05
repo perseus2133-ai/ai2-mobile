@@ -28,6 +28,9 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/* hidden 속성은 모든 author CSS(display:flex 등)을 항상 이긴다 */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0; padding: 0;
   background: var(--bg);
