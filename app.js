@@ -3,7 +3,7 @@
    - CSV는 ai2 레포의 raw URL에서 직접 fetch
    - LocalStorage에 30분 캐시 (모바일 데이터 절약)
    ============================================================ */
-console.log('[qm] app.js loaded, build v3');
+console.log('[qm] app.js loaded, build v4');
 
 const CSV_URL = 'https://raw.githubusercontent.com/perseus2133-ai/ai2/main/data/consensus_data.csv';
 const PASSWORD = '9084';
@@ -205,9 +205,26 @@ function renderMeta(ts) {
 
 /* ============================================================
    필터 + 정렬
+   - 검색어가 있으면: '전체 검색 모드' (필터 전부 무시, 종목명/코드만 매칭)
+   - 검색어 없으면: 기존 필터 모드
    ============================================================ */
 function applyFilters() {
   const f = filters;
+  const searchMode = !!(f.search && f.search.trim());
+  if (searchMode) {
+    const q = f.search.trim().toLowerCase();
+    filteredData = allData.filter(row => {
+      const name = (row['종목명'] || '').toLowerCase();
+      const code = String(row['종목코드'] || '').padStart(6, '0');
+      return name.includes(q) || code.includes(q);
+    });
+    decorate(filteredData);
+    sortFiltered();
+    page = 1;
+    render();
+    updateMeta(searchMode);
+    return;
+  }
   filteredData = allData.filter(row => {
     if (!f.markets.includes(row['시장'])) return false;
     const vol = +row['Recent_Volume'] || 0;
@@ -240,30 +257,36 @@ function applyFilters() {
     const meets = revG.some(v => v >= f.revThresh) || opG.some(v => v >= f.opThresh);
     if (!meets) return false;
 
-    // 검색
-    if (f.search) {
-      const q = f.search.toLowerCase();
-      const name = (row['종목명'] || '').toLowerCase();
-      const code = String(row['종목코드'] || '');
-      if (!name.includes(q) && !code.includes(q)) return false;
-    }
     return true;
   });
 
-  // 정렬용 보조 계산
-  filteredData.forEach(r => {
+  decorate(filteredData);
+  sortFiltered();
+  page = 1;
+  render();
+  updateMeta(false);
+}
+
+function decorate(rows) {
+  rows.forEach(r => {
     r.__visibility = visibilityScore(r);
     r.__op26max = (() => {
       const v = [r['영업이익_2026'], r['영업이익_2027'], r['영업이익_2028']].filter(x => !isNaN(x));
       return v.length ? Math.max(...v) : NaN;
     })();
   });
+}
 
-  sortFiltered();
-  page = 1;
-  render();
+function updateMeta(searchMode) {
   const c = document.getElementById('meta-count');
-  if (c) c.textContent = `${filteredData.length}건`;
+  if (!c) return;
+  if (searchMode) {
+    c.textContent = `🔍 검색 ${filteredData.length}건`;
+    c.style.color = '#62EFFF';
+  } else {
+    c.textContent = `${filteredData.length}건`;
+    c.style.color = '';
+  }
 }
 
 function visibilityScore(r) {
@@ -805,13 +828,36 @@ document.getElementById('search-toggle').addEventListener('click', () => {
   }
 });
 let searchTimer = null;
-document.getElementById('search-input').addEventListener('input', e => {
+const searchInputEl = document.getElementById('search-input');
+const searchClearBtn = document.getElementById('search-clear');
+
+function syncSearchUI(v) {
+  if (searchClearBtn) searchClearBtn.hidden = !v;
+}
+searchInputEl.addEventListener('input', e => {
+  const v = e.target.value;
+  syncSearchUI(v);
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
-    filters.search = e.target.value.trim();
+    filters.search = v.trim();
     page = 1;
     applyFilters();
   }, 200);
+});
+searchInputEl.addEventListener('search', e => {
+  // iOS Safari: × 누르면 search 이벤트 발생
+  syncSearchUI(e.target.value);
+  filters.search = e.target.value.trim();
+  page = 1;
+  applyFilters();
+});
+if (searchClearBtn) searchClearBtn.addEventListener('click', () => {
+  searchInputEl.value = '';
+  syncSearchUI('');
+  filters.search = '';
+  page = 1;
+  applyFilters();
+  searchInputEl.focus();
 });
 
 /* ============================================================
